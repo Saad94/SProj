@@ -1,0 +1,19 @@
+I/PRP like/VBP LUMS/NNS because/IN why/WRB not/RB ./.
+	TAG: VBP	WORD: like
+
+
+LUMS/NNS is/VBZ awesome/JJ because/IN of/IN the/DT poondi/NN bench/NN ./.
+	TAG: VBZ	WORD: is
+
+
+There/EX is/VBZ a/DT wide/JJ variety/NN of/IN food/NN options/NNS ,/, consequently/RB ,/, people/NNS in/IN LUMS/NNS are/VBP happy/JJ and/CC content/NN ./.
+	TAG: VBZ	WORD: is
+	TAG: VBP	WORD: are
+
+
+As/IN a/DT result/NN of/IN the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/JJ to/TO overeating/VBG and/CC overspending/VBG ./.
+	TAG: VBP	WORD: are
+	TAG: VBG	WORD: overeating
+	TAG: VBG	WORD: overspending
+
+
