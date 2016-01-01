@@ -56,6 +56,13 @@ However/RB ,/, due/JJ to/TO the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/
 	TAG: VBG	WORD: overspending
 
 
+because of a , i am b , but to be fair , there is also c.
+Because/IN of/IN A/DT ,/, I/PRP am/VBP B/NN ,/, but/CC to/TO be/VB fair/JJ ,/, there/EX is/VBZ also/RB C./JJ
+	TAG: VBP	WORD: am
+	TAG: VB 	WORD: be
+	TAG: VBZ	WORD: is
+
+
 
 ***
 C:\Users\Saad\Desktop\SProj\SProj\textfiles\test\tinyfile.txt
@@ -85,5 +92,18 @@ As/IN a/DT result/NN of/IN the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/J
 
 Inverse Document Frequency Count
 	Causal:     2, 0, 0, 2, 0, 1, 
-	Non-Causal: 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+	Non-Causal: 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
 
+1	am - be
+1	am - being
+1	am - conducted
+1	am - is
+2	are - is
+1	become - do
+1	become - know
+1	become - say
+1	being - opposed
+1	conducted - opposed
+1	do - is
+1	is - know
+1	is - say
