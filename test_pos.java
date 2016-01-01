@@ -37,8 +37,8 @@ class Word_Count implements Comparable<Word_Count> {
     return Integer.toString(count) + "\t" + word;
   }
 
-  public boolean equals(Word_Count wp) {
-    return word.equals(wp.word);
+  public boolean equals(Word_Count wc) {
+    return word.equals(wc.word);
   }
 
   public void increment() {
@@ -118,6 +118,19 @@ public class test_pos {
   static String           modelFile         = "models\\english-left3words-distsim.tagger";
   static PrintWriter      pw;
 
+
+  //=================================================================================
+  //=================================================================================
+
+  public static int find_WC_count(String word) {
+    for (Word_Count wc : doc_count_words) {
+      if (wc.word.equals(word)) {
+        return wc.count;
+      }
+    }
+    return 0;
+  }
+
   //=================================================================================
   //=================================================================================
 
@@ -174,8 +187,24 @@ public class test_pos {
     return returnValue;
   }
 
-  public static void idf() {
+  public static double IDF(Word_Pair wp) {
+    double one = idf(wp.word_one);
+    double two = idf(wp.word_two);
+    double three = idf(wp);
 
+    pw.print(wp.print() + "\n\t");
+    pw.println(Double.toString(one) + " * " + Double.toString(two) + " * " + Double.toString(three));
+    return one * two * three;
+  }
+
+  public static double idf(String word) {
+    double ans = 1.0 + find_WC_count(word);
+    return all_files.size() / ans;
+  }
+
+  public static double idf(Word_Pair wp) {
+    double ans = 1.0 + wp.count;
+    return all_files.size() / ans;
   }
 
   //=================================================================================
@@ -344,6 +373,10 @@ public class test_pos {
     for (Word_Pair wp : all_verb_pairs) {
       pw.println("\t" + wp.print());
     }
+
+    // Printing a sample IDF.
+    pw.print("\nIDF\n\t");
+    IDF(all_verb_pairs.get(14));
 
     pw.close();
   }

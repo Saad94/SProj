@@ -177,3 +177,6 @@ Verb Pairs
 	1	is - know
 	2	is - said
 	1	is - say
+IDF
+	2	is - said
+	1.6666666666666667 * 2.5 * 1.6666666666666667
