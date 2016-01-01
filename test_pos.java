@@ -24,6 +24,38 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 //=================================================================================
 //=================================================================================
 
+class Word_Count implements Comparable<Word_Count> {
+  public int    count;
+  public String word;
+
+  public Word_Count(String w1) {
+    word = w1.toLowerCase();
+    count = 1;
+  }
+
+  public String print() {
+    return Integer.toString(count) + "\t" + word;
+  }
+
+  public boolean equals(Word_Count wp) {
+    return word.equals(wp.word);
+  }
+
+  public void increment() {
+    count++;
+  }
+
+  @Override
+  public int compareTo(Word_Count another) {
+    if (this.word.compareTo(another.word) < 0) {
+        return -1;
+    } else {
+        return 1;
+    }
+  }
+}
+
+
 class Word_Pair implements Comparable<Word_Pair> {
   public int    count;
   public String word_one;
@@ -77,31 +109,72 @@ public class test_pos {
   // static List<String>   phrases_non_causal        = Arrays.asList("but", "in short", "in other words", "whereas", "on the other hand", "nevertheless", "nonetheless", "in spite of", "in contrast", "however", "even", "though", "despite the fact", "conversely", "although"); 
   // static List<Integer>  count_phrases_causal      = Arrays.asList(0, 0, 0, 0, 0, 0);
   // static List<Integer>  count_phrases_non_causal  = Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  static List<File>     all_files         = new ArrayList<>();
-  static List<Word_Pair>all_verb_pairs    = new ArrayList<>();
-  static List<String>   phrases_all       = Arrays.asList("because", "for this reason", "for that reason", "consequently", "as a consequence of", "as a result of", "but", "in short", "in other words", "whereas", "on the other hand", "nevertheless", "nonetheless", "in spite of", "in contrast", "however", "even", "though", "despite the fact", "conversely", "although");
-  static List<Integer>  count_phrases_all = Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  static List<Integer>  length_phrases_all= Arrays.asList(1, 3, 3, 1, 4, 4, 1, 2, 3, 1, 4, 1, 1, 3, 2, 1, 1, 1, 3, 1, 1);
-  static String         dirName           = System.getProperty("user.dir") + "\\textfiles\\test";
-  static String         modelFile         = "models\\english-left3words-distsim.tagger";
-  static PrintWriter    pw;
+  static List<File>       all_files         = new ArrayList<>();
+  static List<Word_Pair>  all_verb_pairs    = new ArrayList<>();
+  static List<Word_Count> doc_count_words   = new ArrayList<>();
+  static List<String>     phrases_all       = Arrays.asList("because", "for this reason", "for that reason", "consequently", "as a consequence of", "as a result of", "but", "in short", "in other words", "whereas", "on the other hand", "nevertheless", "nonetheless", "in spite of", "in contrast", "however", "even", "though", "despite the fact", "conversely", "although");
+  static List<Integer>    length_phrases_all= Arrays.asList(1, 3, 3, 1, 4, 4, 1, 2, 3, 1, 4, 1, 1, 3, 2, 1, 1, 1, 3, 1, 1);
+  static String           dirName           = System.getProperty("user.dir") + "\\textfiles\\test";
+  static String           modelFile         = "models\\english-left3words-distsim.tagger";
+  static PrintWriter      pw;
 
   //=================================================================================
   //=================================================================================
 
-  public static List<Integer> IDF_Counter(int id) throws Exception {
+  public static List<Integer> docWordCounter(int id) throws Exception {
     List<Integer> returnValue = new ArrayList<>();
     String content = new Scanner(all_files.get(id)).useDelimiter("\\Z").next().toLowerCase();
     for (int i = 0; i < phrases_all.size(); i++) {
       if (content.contains(phrases_all.get(i))) {
-        count_phrases_all.set(i, count_phrases_all.get(i)+1);
         returnValue.add(i);
       }
     }
+
+    content = content.replace(".", "");
+    content = content.replace(",", "");
+    List<String> documentWords = new ArrayList<>(Arrays.asList(content.split(" ")));
+
+    // Removing duplicate words.
+    Collections.sort(documentWords);
+    int size = documentWords.size() - 1;
+    for (int i = 0; i < size; i++) {
+      if (documentWords.get(i).equals(documentWords.get(i+1))) {
+        documentWords.remove(i+1);
+        i--;
+        size--;
+      }
+    }
+
+    for (String s : documentWords) {
+      doc_count_words.add(new Word_Count(s));
+    }
+
+    // Removing duplicate words and incrementing the document count for those words.
+    Collections.sort(doc_count_words);
+    size = doc_count_words.size() - 1;
+    boolean inc = true;
+
+    for (int i = 0; i < size; i++) {
+      if (doc_count_words.get(i).equals(doc_count_words.get(i+1))) {
+        if (inc) {
+          doc_count_words.get(i).increment();
+          inc = false;
+        }
+
+        doc_count_words.remove(i+1);
+        if (i+1 < doc_count_words.size() && !doc_count_words.get(i).equals(doc_count_words.get(i+1))) {
+          inc = true;
+        }
+
+        i--;
+        size--;
+      }
+    }    
+
     return returnValue;
   }
 
-  public static void IDF() {
+  public static void idf() {
 
   }
 
@@ -132,12 +205,6 @@ public class test_pos {
           }
 
           if (found) {
-            // pw.println("FOUND");
-            // for (String s : phrase) {
-            //   pw.print(s + " ");
-            // }            
-            // pw.println("\n");
-
             List<String> verbsBefore = new ArrayList<>();
             List<String> verbsAfter  = new ArrayList<>();
 
@@ -223,7 +290,7 @@ public class test_pos {
 
       // Check for occurrences for the (non-)causal strings in the current document, increment the occurrence counter for use in IDF function.
       // Find out which (non-)causal string to check for in the current document
-      List<Integer> toCheck = IDF_Counter(id);
+      List<Integer> toCheck = docWordCounter(id);
 
       // Open the file.
       BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
@@ -254,10 +321,9 @@ public class test_pos {
     }
 
     // Printing the Inverse Document Frequency Count
-    pw.print("Inverse Document Frequency Count\n\tCausal:     ");
-    for (int i = 0; i < count_phrases_all.size(); i++) {
-      if (i == 6) {pw.print("\n\tNon-Causal: ");}
-      pw.print(count_phrases_all.get(i) + ", ");
+    pw.print("Inverse Document Frequency Count\n");
+    for (int i = 0; i < doc_count_words.size(); i++) {
+      pw.println("\t" + doc_count_words.get(i).print());
     }
     pw.print("\n\n");
 
@@ -274,8 +340,9 @@ public class test_pos {
     }
 
     // Printing the Verb Pairs.
+    pw.print("Verb Pairs\n");
     for (Word_Pair wp : all_verb_pairs) {
-      pw.println(wp.print());
+      pw.println("\t" + wp.print());
     }
 
     pw.close();

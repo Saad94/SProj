@@ -56,8 +56,9 @@ However/RB ,/, due/JJ to/TO the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/
 	TAG: VBG	WORD: overspending
 
 
-because of a , i am b , but to be fair , there is also c.
-Because/IN of/IN A/DT ,/, I/PRP am/VBP B/NN ,/, but/CC to/TO be/VB fair/JJ ,/, there/EX is/VBZ also/RB C./JJ
+he said because of a , i am b , but to be fair , there is also c.
+he/PRP said/VBD because/IN of/IN A/DT ,/, I/PRP am/VBP B/NN ,/, but/CC to/TO be/VB fair/JJ ,/, there/EX is/VBZ also/RB C./JJ
+	TAG: VBD	WORD: said
 	TAG: VBP	WORD: am
 	TAG: VB 	WORD: be
 	TAG: VBZ	WORD: is
@@ -91,19 +92,88 @@ As/IN a/DT result/NN of/IN the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/J
 
 
 Inverse Document Frequency Count
-	Causal:     2, 0, 0, 2, 0, 1, 
-	Non-Causal: 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
+	3	a
+	1	also
+	1	am
+	2	and
+	2	are
+	1	as
+	1	awesome
+	2	b
+	1	be
+	2	because
+	1	become
+	1	being
+	1	bench
+	1	brats
+	1	but
+	1	by
+	1	c
+	1	conducted
+	2	consequently
+	2	content
+	1	den
+	1	disgusting
+	1	do
+	1	due
+	1	fair
+	2	food
+	2	good
+	2	happy
+	1	he
+	1	how
+	1	however
+	2	i
+	2	in
+	1	incredible
+	1	indulgent
+	2	is
+	1	jh
+	1	know
+	1	like
+	2	lums
+	1	mismanagement
+	1	no
+	2	not
+	2	of
+	1	opposed
+	2	options
+	2	overeating
+	2	overspending
+	1	parents
+	2	people
+	1	poondi
+	2	prone
+	1	result
+	1	ro
+	1	said
+	1	say
+	1	so
+	1	spoilt
+	2	the
+	2	there
+	2	to
+	2	variety
+	1	vehemently
+	1	who
+	1	why
+	2	wide
 
-1	am - be
-1	am - being
-1	am - conducted
-1	am - is
-2	are - is
-1	become - do
-1	become - know
-1	become - say
-1	being - opposed
-1	conducted - opposed
-1	do - is
-1	is - know
-1	is - say
+
+Verb Pairs
+	1	am - be
+	1	am - being
+	1	am - conducted
+	1	am - is
+	1	am - said
+	2	are - is
+	2	be - said
+	1	become - do
+	1	become - know
+	1	become - say
+	1	being - opposed
+	1	conducted - opposed
+	1	do - is
+	1	is - know
+	2	is - said
+	1	is - say
