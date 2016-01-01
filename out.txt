@@ -1,19 +1,89 @@
-I/PRP like/VBP LUMS/NNS because/IN why/WRB not/RB ./.
-	TAG: VBP	WORD: like
+
+***
+C:\Users\Saad\Desktop\SProj\SProj\textfiles\test\junk txt files, testing iteratefiles function\a.txt
+***
+a
+a/DT
 
 
-LUMS/NNS is/VBZ awesome/JJ because/IN of/IN the/DT poondi/NN bench/NN ./.
+
+***
+C:\Users\Saad\Desktop\SProj\SProj\textfiles\test\junk txt files, testing iteratefiles function\asd\jh.txt
+***
+jh
+jh/NN
+
+
+
+***
+C:\Users\Saad\Desktop\SProj\SProj\textfiles\test\junk txt files, testing iteratefiles function\f\b.txt
+***
+b
+b/NN
+
+
+
+***
+C:\Users\Saad\Desktop\SProj\SProj\textfiles\test\tinyfile (2).txt
+***
+i am vehemently opposed to lums because of the incredible mismanagement being conducted by the ro .
+I/PRP am/VBP vehemently/RB opposed/VBN to/TO LUMS/NNS because/IN of/IN the/DT incredible/JJ mismanagement/NN being/VBG conducted/VBN by/IN the/DT RO/NN ./.
+	TAG: VBP	WORD: am
+	TAG: VBN	WORD: opposed
+	TAG: VBG	WORD: being
+	TAG: VBN	WORD: conducted
+
+
+lums is a den of disgusting , spoilt brats who become so because of indulgent parents who do not know how to say no .
+LUMS/NNS is/VBZ a/DT den/NN of/IN disgusting/JJ ,/, spoilt/JJ brats/NNS who/WP become/VBP so/RB because/IN of/IN indulgent/JJ parents/NNS who/WP do/VBP not/RB know/VB how/WRB to/TO say/VB no/DT ./.
 	TAG: VBZ	WORD: is
+	TAG: VBP	WORD: become
+	TAG: VBP	WORD: do
+	TAG: VB 	WORD: know
+	TAG: VB 	WORD: say
 
 
+there is a wide variety of food options , consequently , people in lums are happy and content .
 There/EX is/VBZ a/DT wide/JJ variety/NN of/IN food/NN options/NNS ,/, consequently/RB ,/, people/NNS in/IN LUMS/NNS are/VBP happy/JJ and/CC content/NN ./.
 	TAG: VBZ	WORD: is
 	TAG: VBP	WORD: are
 
 
+however , due to the good food , people are prone to overeating and overspending .
+However/RB ,/, due/JJ to/TO the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/JJ to/TO overeating/VBG and/CC overspending/VBG ./.
+	TAG: VBP	WORD: are
+	TAG: VBG	WORD: overeating
+	TAG: VBG	WORD: overspending
+
+
+
+***
+C:\Users\Saad\Desktop\SProj\SProj\textfiles\test\tinyfile.txt
+***
+i like lums because why not .
+I/PRP like/VBP LUMS/NNS because/IN why/WRB not/RB ./.
+	TAG: VBP	WORD: like
+
+
+lums is awesome because of the poondi bench .
+LUMS/NNS is/VBZ awesome/JJ because/IN of/IN the/DT poondi/NN bench/NN ./.
+	TAG: VBZ	WORD: is
+
+
+there is a wide variety of food options , consequently , people in lums are happy and content .
+There/EX is/VBZ a/DT wide/JJ variety/NN of/IN food/NN options/NNS ,/, consequently/RB ,/, people/NNS in/IN LUMS/NNS are/VBP happy/JJ and/CC content/NN ./.
+	TAG: VBZ	WORD: is
+	TAG: VBP	WORD: are
+
+
+as a result of the good food , people are prone to overeating and overspending .
 As/IN a/DT result/NN of/IN the/DT good/JJ food/NN ,/, people/NNS are/VBP prone/JJ to/TO overeating/VBG and/CC overspending/VBG ./.
 	TAG: VBP	WORD: are
 	TAG: VBG	WORD: overeating
 	TAG: VBG	WORD: overspending
 
+
+Inverse Document Frequency Count
+	Causal:     2, 0, 0, 2, 0, 1, 
+	Non-Causal: 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
 
