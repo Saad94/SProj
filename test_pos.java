@@ -25,24 +25,30 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 //=================================================================================
 
 class Word_Count implements Comparable<Word_Count> {
-  public int    count;
+  public int    actualCount;
+  public int    documentCount;
   public String word;
 
   public Word_Count(String w1) {
-    word = w1.toLowerCase();
-    count = 1;
+    word          = w1.toLowerCase();
+    actualCount   = 1;
+    documentCount = 1;
   }
 
   public String print() {
-    return Integer.toString(count) + "\t" + word;
+    return Integer.toString(documentCount) + "\t" + Integer.toString(actualCount) + "\t" + word;
   }
 
   public boolean equals(Word_Count wc) {
     return word.equals(wc.word);
   }
 
-  public void increment() {
-    count++;
+  public void documentIncrement() {
+    documentCount++;
+  }
+
+  public void actualIncrement() {
+    actualCount++;
   }
 
   @Override
@@ -57,7 +63,8 @@ class Word_Count implements Comparable<Word_Count> {
 
 
 class Word_Pair implements Comparable<Word_Pair> {
-  public int    count;
+  public int    actualCount;
+  public int    documentCount;
   public String word_one;
   public String word_two;
 
@@ -72,7 +79,8 @@ class Word_Pair implements Comparable<Word_Pair> {
       word_two = w1;
     }
 
-    count = 1;
+    actualCount = 1;
+    documentCount = 1;
   }
 
   public String toString() {
@@ -80,15 +88,19 @@ class Word_Pair implements Comparable<Word_Pair> {
   }
 
   public String print() {
-    return Integer.toString(count) + "\t" + toString();
+    return Integer.toString(documentCount) + "\t" + Integer.toString(actualCount) + "\t" + toString();
   }
 
   public boolean equals(Word_Pair wp) {
     return word_one.equals(wp.word_one) && word_two.equals(wp.word_two);
   }
 
-  public void increment() {
-    count++;
+  public void documentIncrement() {
+    documentCount++;
+  }
+
+  public void actualIncrement() {
+    actualCount++;
   }
 
   @Override
@@ -117,18 +129,18 @@ public class test_pos {
   static String           dirName           = System.getProperty("user.dir") + "\\textfiles\\test";
   static String           modelFile         = "models\\english-left3words-distsim.tagger";
   static PrintWriter      pw;
-
+  static int              totalNumWords;
 
   //=================================================================================
   //=================================================================================
 
-  public static int find_WC_count(String word) {
+  public static Word_Count find_WC(String word) {
     for (Word_Count wc : doc_count_words) {
       if (wc.word.equals(word)) {
-        return wc.count;
+        return wc;
       }
     }
-    return 0;
+    return null;
   }
 
   //=================================================================================
@@ -147,45 +159,47 @@ public class test_pos {
     content = content.replace(",", "");
     List<String> documentWords = new ArrayList<>(Arrays.asList(content.split(" ")));
 
-    // Removing duplicate words.
-    Collections.sort(documentWords);
-    int size = documentWords.size() - 1;
-    for (int i = 0; i < size; i++) {
-      if (documentWords.get(i).equals(documentWords.get(i+1))) {
-        documentWords.remove(i+1);
-        i--;
-        size--;
-      }
+    // Make a backup of doc_count_words so we can check for differences and increment document count.
+    List<Word_Count> oldList = new ArrayList<>();
+    List<Integer> oldActualCounts = new ArrayList<>();
+    for (Word_Count wc : doc_count_words) {
+      oldList.add(wc);
+      int i = wc.actualCount;
+      oldActualCounts.add(i);
     }
 
     for (String s : documentWords) {
       doc_count_words.add(new Word_Count(s));
     }
 
-    // Removing duplicate words and incrementing the document count for those words.
+    // Removing duplicate words and incrementing the actual count for those words.
     Collections.sort(doc_count_words);
-    size = doc_count_words.size() - 1;
-    boolean inc = true;
-
+    int size = doc_count_words.size() - 1;
+    
     for (int i = 0; i < size; i++) {
       if (doc_count_words.get(i).equals(doc_count_words.get(i+1))) {
-        if (inc) {
-          doc_count_words.get(i).increment();
-          inc = false;
-        }
-
+        doc_count_words.get(i).actualIncrement();
         doc_count_words.remove(i+1);
-        if (i+1 < doc_count_words.size() && !doc_count_words.get(i).equals(doc_count_words.get(i+1))) {
-          inc = true;
-        }
-
         i--;
         size--;
       }
     }    
 
+    // Incrementing the document count for the words.
+    for (int i = 0; i < oldList.size(); i++) {
+      if (oldList.get(i).actualCount != oldActualCounts.get(i)) {
+        oldList.get(i).documentIncrement();
+      }
+    }
+
+    oldList.clear();
+    oldActualCounts.clear();
+
     return returnValue;
   }
+
+  //=================================================================================
+  //=================================================================================
 
   public static double IDF(Word_Pair wp) {
     double one = idf(wp.word_one);
@@ -198,13 +212,56 @@ public class test_pos {
   }
 
   public static double idf(String word) {
-    double ans = 1.0 + find_WC_count(word);
+    double ans = 1.0 + find_WC(word).documentCount;
     return all_files.size() / ans;
   }
 
   public static double idf(Word_Pair wp) {
-    double ans = 1.0 + wp.count;
+    double ans = 1.0 + wp.documentCount;
     return all_files.size() / ans;
+  }
+
+  //=================================================================================
+  //=================================================================================
+
+  public static double P(String word) {
+    return 0.0;
+  }
+
+  public static double P(Word_Pair wp) {
+    return 0.0;
+  }
+
+  public static double PMI(Word_Pair wp) {
+    return Math.log(P(wp) / (P(wp.word_one) * P(wp.word_two)));
+  }
+
+  //=================================================================================
+  //=================================================================================
+
+  public static double CD(Word_Pair wp) {
+    return PMI(wp) * max(wp) * IDF(wp);
+  }
+
+  //=================================================================================
+  //=================================================================================
+
+  public static double max(Word_Pair wp) {
+    return 0.0;
+  }
+
+  //=================================================================================
+  //=================================================================================
+
+  public static double PS_I(Word_Pair wp) {
+    return 0.0;
+  }
+
+  //=================================================================================
+  //=================================================================================
+
+  public static Word_Pair f_I() {
+    return null;
   }
 
   //=================================================================================
@@ -251,6 +308,12 @@ public class test_pos {
               }
             }
 
+            // pw.println("BEFORE");
+            // for (Word_Pair wp : all_verb_pairs) {
+            //   pw.println(wp.print());
+            // }
+            // pw.println("\n\n");
+
             // If verbs exist both before and after the discourse marker, form all possible pairs of them.
             for (String s1 : verbsBefore) {
               for (String s2 : verbsAfter) {
@@ -259,6 +322,24 @@ public class test_pos {
                 if (!s1.toLowerCase().equals(s2.toLowerCase())) {
                   all_verb_pairs.add(new Word_Pair(s1, s2));
                 }
+              }
+            }
+
+            // pw.println("AFTER");
+            // for (Word_Pair wp : all_verb_pairs) {
+            //   pw.println(wp.print());
+            // }
+            // pw.println("\n\n");
+
+            // Removing duplicate Verb Pairs and incrementing their count.
+            Collections.sort(all_verb_pairs);
+            int size = all_verb_pairs.size() - 1;
+            for (int j = 0; j < size; j++) {
+              if (all_verb_pairs.get(j).equals(all_verb_pairs.get(j+1))) {
+                all_verb_pairs.get(j).actualIncrement();
+                all_verb_pairs.remove(j+1);
+                j--;
+                size--;
               }
             }
           }
@@ -342,12 +423,32 @@ public class test_pos {
         // Print the tagged sentence.
         pw.println(Sentence.listToString(tSentence, false));
 
+        // Make a backup of all_verb_pairs so we can check for differences and increment document count.
+        List<Word_Pair> oldList = new ArrayList<>();
+        List<Integer> oldActualCounts = new ArrayList<>();
+        for (Word_Pair wp : all_verb_pairs) {
+          oldList.add(wp);
+          int i = wp.actualCount;
+          oldActualCounts.add(i);
+        }
+
         // Find pairs of verbs before and after the unambiguous discourse markers.
         findVerbPairs(toCheck, tSentence);
+
+        // Incrementing the document count for the pairs.
+        for (int i = 0; i < oldList.size(); i++) {
+          if (oldList.get(i).actualCount != oldActualCounts.get(i)) {
+            oldList.get(i).documentIncrement();
+          }
+        }
 
         pw.println("\n");
       }
     }
+
+    // Total number of words.
+    totalNumWords = 0;
+    ////////////////////////////////////////////////////////////////////
 
     // Printing the Inverse Document Frequency Count
     pw.print("Inverse Document Frequency Count\n");
@@ -355,18 +456,6 @@ public class test_pos {
       pw.println("\t" + doc_count_words.get(i).print());
     }
     pw.print("\n\n");
-
-    // Removing duplicate Verb Pairs and incrementing their count.
-    Collections.sort(all_verb_pairs);
-    int size = all_verb_pairs.size() - 1;
-    for (int i = 0; i < size; i++) {
-      if (all_verb_pairs.get(i).equals(all_verb_pairs.get(i+1))) {
-        all_verb_pairs.get(i).increment();
-        all_verb_pairs.remove(i+1);
-        i--;
-        size--;
-      }
-    }
 
     // Printing the Verb Pairs.
     pw.print("Verb Pairs\n");
