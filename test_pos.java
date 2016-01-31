@@ -28,6 +28,16 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 //=================================================================================
 //=================================================================================
 
+class Pair {
+  public int x;
+  public int y;
+
+  public Pair(int _x, int _y) {
+    x = _x;
+    y = _y;
+  }
+}
+
 class Word_Count implements Comparable<Word_Count> {
   public int    actualCount;
   public int    documentCount;
@@ -289,15 +299,14 @@ public class test_pos {
   //=================================================================================
   //=================================================================================
 
-  public static void findVerbPairs(List<Integer> toCheck, List<TaggedWord> tSentence) {
-    boolean printer = true;
+  public static List<Pair> findPhraseLocations(List<TaggedWord> tSentence) {
+    List<Pair> phraseLocations = new ArrayList<>();
 
-    // Go through each (non-)causal phrase to be checked in the current sentence.
-    for (Integer id : toCheck) {
-      List<String> phrase = Arrays.asList(phrases_all.get(id).split(" "));
+    // Go through each tagged word in the sentence.
+    for (int i = 0; i < tSentence.size(); i++) {
 
-      // Go through each tagged word in the sentence.
-      for (int i = 0; i < tSentence.size(); i++) {
+      for (int k = 0; k < phrases_all.size(); k++) {
+        List<String> phrase = Arrays.asList(phrases_all.get(k).split(" "));
 
         // Find the position of the (non-)causal phrase.
         boolean found = false;
@@ -313,71 +322,133 @@ public class test_pos {
           }
 
           if (found) {
-            List<String> verbsBefore = new ArrayList<>();
-            List<String> verbsAfter  = new ArrayList<>();
-
-            // Check for verbs occurring before the unambiguous discourse marker.
-            for (int j = 0; j < i; j++) {
-              if (tSentence.get(j).tag().startsWith("VB")) {
-                verbsBefore.add(tSentence.get(j).word());
-              }
-            }
-
-            // Check for verbs occurring after the unambiguous discourse marker.
-            for (int j = i+length_phrases_all.get(id); j < tSentence.size(); j++) {
-              if (tSentence.get(j).tag().startsWith("VB")) {
-                verbsAfter.add(tSentence.get(j).word());
-              }
-            }
-
-            // pw.println("BEFORE");
-            // for (Word_Pair wp : all_verb_pairs) {
-            //   pw.println(wp.print());
-            // }
-            // pw.println("\n\n");
-
-            // If verbs exist both before and after the discourse marker, form all possible pairs of them.
-            for (String s1 : verbsBefore) {
-              for (String s2 : verbsAfter) {
-
-                // if the verbs are different
-                if (!s1.toLowerCase().equals(s2.toLowerCase())) {
-                  all_verb_pairs.add(new Word_Pair(s1, s2));
-                }
-              }
-            }
-
-            // pw.println("AFTER");
-            // for (Word_Pair wp : all_verb_pairs) {
-            //   pw.println(wp.print());
-            // }
-            // pw.println("\n\n");
-
-            // Removing duplicate Verb Pairs and incrementing their count.
-            Collections.sort(all_verb_pairs);
-            int size = all_verb_pairs.size() - 1;
-            for (int j = 0; j < size; j++) {
-              if (all_verb_pairs.get(j).equals(all_verb_pairs.get(j+1))) {
-                all_verb_pairs.get(j).actualIncrement();
-                all_verb_pairs.remove(j+1);
-                j--;
-                size--;
-              }
-            }
+            phraseLocations.add(new Pair(i, length_phrases_all.get(k)));
           }
-        }
-
-        // Check if the tagged word is a verb of any kind (there are 6 kinds of verbs; HOW_TO_RUN.txt).
-        if (printer && tSentence.get(i).tag().startsWith("VB")) {
-          if (tSentence.get(i).tag().equals("VB")) {
-            pw.println("\tTAG: " + tSentence.get(i).tag() + " \tWORD: " + tSentence.get(i).word());  
-          } else {
-            pw.println("\tTAG: " + tSentence.get(i).tag() + "\tWORD: " + tSentence.get(i).word());  
-          }
-        }
+        }    
       }
-      printer = false;
     }
+
+    return phraseLocations;
+  }
+
+  public static void findVerbPairs(List<Integer> toCheck, List<TaggedWord> tSentence) {
+    boolean printer = true;
+
+    // // Go through each (non-)causal phrase to be checked in the current sentence.
+    // for (Integer id : toCheck) {
+    //   List<String> phrase = Arrays.asList(phrases_all.get(id).split(" "));
+
+    //   // Go through each tagged word in the sentence.
+    //   for (int i = 0; i < tSentence.size(); i++) {
+
+    //     // Find the position of the (non-)causal phrase.
+    //     boolean found = false;
+    //     if (tSentence.get(i).word().toLowerCase().equals(phrase.get(0))) {
+    //       found = true;
+    //       if (phrase.size() > 1) {
+    //         for (int j = 1; j < phrase.size(); j++) {
+    //           if (tSentence.size() <= i+j || !tSentence.get(i+j).word().toLowerCase().equals(phrase.get(j))) {
+    //             found = false;
+    //             break;
+    //           }
+    //         }
+    //       }
+
+    //       if (found) {
+
+        List<Pair> phraseLocations = findPhraseLocations(tSentence);
+        int start = 0;
+        int end = 0;
+
+        for (int i = 0; i < phraseLocations.size(); i++) {
+          if (i == phraseLocations.size() - 1) {
+            end = tSentence.size();
+          } else {
+            end = phraseLocations.get(i+1).x;
+          }
+
+          List<String> verbsBefore = new ArrayList<>();
+          List<String> verbsAfter  = new ArrayList<>();
+
+          // Check for verbs occurring before the unambiguous discourse marker.
+          for (int j = start; j < phraseLocations.get(i).x; j++) {
+            if (tSentence.get(j).tag().startsWith("VB")) {
+              verbsBefore.add(tSentence.get(j).word());
+
+              // Printing
+              if (tSentence.get(j).tag().equals("VB")) {
+                pw.println("\tTAG_BEFORE: " + tSentence.get(j).tag() + " \tWORD: " + tSentence.get(j).word());  
+              } else {
+                pw.println("\tTAG_BEFORE: " + tSentence.get(j).tag() + "\tWORD: " + tSentence.get(j).word());  
+              }
+            }
+          }
+
+          // Check for verbs occurring after the unambiguous discourse marker.
+          for (int j = phraseLocations.get(i).x+phraseLocations.get(i).y; j < end; j++) {
+            if (tSentence.get(j).tag().startsWith("VB")) {
+              verbsAfter.add(tSentence.get(j).word());
+              
+              // Printing
+              if (tSentence.get(j).tag().equals("VB")) {
+                pw.println("\tTAG_AFTER : " + tSentence.get(j).tag() + " \tWORD: " + tSentence.get(j).word());  
+              } else {
+                pw.println("\tTAG_AFTER : " + tSentence.get(j).tag() + "\tWORD: " + tSentence.get(j).word());  
+              }
+            }
+          }
+
+          start = phraseLocations.get(i).x + phraseLocations.get(i).y;
+
+          // pw.println("BEFORE");
+          // for (Word_Pair wp : all_verb_pairs) {
+          //   pw.println(wp.print());
+          // }
+          // pw.println("\n\n");
+
+          // If verbs exist both before and after the discourse marker, form all possible pairs of them.
+          for (String s1 : verbsBefore) {
+            for (String s2 : verbsAfter) {
+
+              // if the verbs are different
+              if (!s1.toLowerCase().equals(s2.toLowerCase())) {
+                all_verb_pairs.add(new Word_Pair(s1, s2));
+              }
+            }
+          }
+
+          // pw.println("AFTER");
+          // for (Word_Pair wp : all_verb_pairs) {
+          //   pw.println(wp.print());
+          // }
+          // pw.println("\n\n");
+        }
+
+        // Removing duplicate Verb Pairs and incrementing their count.
+        Collections.sort(all_verb_pairs);
+        int size = all_verb_pairs.size() - 1;
+        for (int j = 0; j < size; j++) {
+          if (all_verb_pairs.get(j).equals(all_verb_pairs.get(j+1))) {
+            all_verb_pairs.get(j).actualIncrement();
+            all_verb_pairs.remove(j+1);
+            j--;
+            size--;
+          }
+        }
+        //   }
+        // }
+
+    //     // Check if the tagged word is a verb of any kind (there are 6 kinds of verbs; HOW_TO_RUN.txt).
+    //     if (printer && tSentence.get(i).tag().startsWith("VB")) {
+          // if (tSentence.get(i).tag().equals("VB")) {
+          //   pw.println("\tTAG: " + tSentence.get(i).tag() + " \tWORD: " + tSentence.get(i).word());  
+          // } else {
+          //   pw.println("\tTAG: " + tSentence.get(i).tag() + "\tWORD: " + tSentence.get(i).word());  
+          // }
+    //     }
+    //   }
+    //   printer = false;
+    // }
   }
 
   //=================================================================================
@@ -487,8 +558,8 @@ public class test_pos {
     }
 
     // Printing a sample IDF.
-    pw.print("\nIDF\n\t");
-    IDF(all_verb_pairs.get(14));
+    // pw.print("\nIDF\n\t");
+    // IDF(all_verb_pairs.get(14));
 
     pw.close();
   }
