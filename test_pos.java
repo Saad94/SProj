@@ -5,11 +5,15 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Scanner;
+import java.util.Set;
 
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.ling.TaggedWord;
@@ -36,19 +40,36 @@ class Word_Count implements Comparable<Word_Count> {
   }
 
   public String print() {
-    return Integer.toString(documentCount) + "\t" + Integer.toString(actualCount) + "\t" + word;
+    return Integer.toString(documentCount) + "            " + Integer.toString(actualCount) + "          " + word;
   }
 
   public boolean equals(Word_Count wc) {
     return word.equals(wc.word);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof Word_Count) {
+      Word_Count wc = (Word_Count) o;
+      return word.equals(wc.word);
+    }
+    return false;
+  }
+
   public void documentIncrement() {
     documentCount++;
   }
 
+  public void documentIncrement(int inc) {
+    documentCount += inc;
+  }
+
   public void actualIncrement() {
     actualCount++;
+  }
+
+  public void actualIncrement(int inc) {
+    actualCount += inc;
   }
 
   @Override
@@ -91,6 +112,15 @@ class Word_Pair implements Comparable<Word_Pair> {
     return Integer.toString(documentCount) + "\t" + Integer.toString(actualCount) + "\t" + toString();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof Word_Pair) {
+      Word_Pair wp = (Word_Pair) o;
+      return word_one.equals(wp.word_one) && word_two.equals(wp.word_two);
+    }
+    return false;
+  }
+
   public boolean equals(Word_Pair wp) {
     return word_one.equals(wp.word_one) && word_two.equals(wp.word_two);
   }
@@ -99,8 +129,16 @@ class Word_Pair implements Comparable<Word_Pair> {
     documentCount++;
   }
 
+  public void documentIncrement(int inc) {
+    documentCount += inc;
+  }
+
   public void actualIncrement() {
     actualCount++;
+  }
+
+  public void actualIncrement(int inc) {
+    actualCount += inc;
   }
 
   @Override
@@ -117,10 +155,6 @@ class Word_Pair implements Comparable<Word_Pair> {
 //=================================================================================
 
 public class test_pos {
-  // static List<String>   phrases_causal            = Arrays.asList("because", "for this reason", "for that reason", "consequently", "as a consequence of", "as a result of");
-  // static List<String>   phrases_non_causal        = Arrays.asList("but", "in short", "in other words", "whereas", "on the other hand", "nevertheless", "nonetheless", "in spite of", "in contrast", "however", "even", "though", "despite the fact", "conversely", "although"); 
-  // static List<Integer>  count_phrases_causal      = Arrays.asList(0, 0, 0, 0, 0, 0);
-  // static List<Integer>  count_phrases_non_causal  = Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   static List<File>       all_files         = new ArrayList<>();
   static List<Word_Pair>  all_verb_pairs    = new ArrayList<>();
   static List<Word_Count> doc_count_words   = new ArrayList<>();
@@ -157,44 +191,32 @@ public class test_pos {
 
     content = content.replace(".", "");
     content = content.replace(",", "");
-    List<String> documentWords = new ArrayList<>(Arrays.asList(content.split(" ")));
 
-    // Make a backup of doc_count_words so we can check for differences and increment document count.
-    List<Word_Count> oldList = new ArrayList<>();
-    List<Integer> oldActualCounts = new ArrayList<>();
+    // Increment document counter for words. Add new words to doc_count_words.
+    Set<String> set = new HashSet<String>(Arrays.asList(content.split(" ")));
+
+    for (String s : set) {
+      Word_Count temp = new Word_Count(s);
+      int index = doc_count_words.indexOf(temp);
+      if (index != -1) {
+        doc_count_words.get(index).documentIncrement();
+      } else {
+        doc_count_words.add(temp);
+        temp.actualIncrement(-1);
+      }
+    }
+
+    // Increment actual counter for words.
     for (Word_Count wc : doc_count_words) {
-      oldList.add(wc);
-      int i = wc.actualCount;
-      oldActualCounts.add(i);
+      int i = 0;
+      Pattern p = Pattern.compile(wc.word);
+      Matcher m = p.matcher(content);
+      while (m.find()) {
+          i++;
+      }
+      wc.actualIncrement(i);
     }
-
-    for (String s : documentWords) {
-      doc_count_words.add(new Word_Count(s));
-    }
-
-    // Removing duplicate words and incrementing the actual count for those words.
-    Collections.sort(doc_count_words);
-    int size = doc_count_words.size() - 1;
     
-    for (int i = 0; i < size; i++) {
-      if (doc_count_words.get(i).equals(doc_count_words.get(i+1))) {
-        doc_count_words.get(i).actualIncrement();
-        doc_count_words.remove(i+1);
-        i--;
-        size--;
-      }
-    }    
-
-    // Incrementing the document count for the words.
-    for (int i = 0; i < oldList.size(); i++) {
-      if (oldList.get(i).actualCount != oldActualCounts.get(i)) {
-        oldList.get(i).documentIncrement();
-      }
-    }
-
-    oldList.clear();
-    oldActualCounts.clear();
-
     return returnValue;
   }
 
@@ -451,9 +473,10 @@ public class test_pos {
     ////////////////////////////////////////////////////////////////////
 
     // Printing the Inverse Document Frequency Count
-    pw.print("Inverse Document Frequency Count\n");
+    pw.print("DOCUMENT     ACTUAL     WORD\n");
+    Collections.sort(doc_count_words);
     for (int i = 0; i < doc_count_words.size(); i++) {
-      pw.println("\t" + doc_count_words.get(i).print());
+      pw.println(doc_count_words.get(i).print());
     }
     pw.print("\n\n");
 
