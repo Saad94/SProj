@@ -191,10 +191,11 @@ public class analyze_files {
   static List<Word_Count> doc_count_words   = new ArrayList<>();
   static List<String>     phrases_all       = Arrays.asList("because", "for this reason", "for that reason", "consequently", "as a consequence of", "as a result of", "but", "in short", "in other words", "whereas", "on the other hand", "nevertheless", "nonetheless", "in spite of", "in contrast", "however", "even", "though", "despite the fact", "conversely", "although");
   static List<Integer>    length_phrases_all= Arrays.asList(1, 3, 3, 1, 4, 4, 1, 2, 3, 1, 4, 1, 1, 3, 2, 1, 1, 1, 3, 1, 1);
-  static String           fileName          = System.getProperty("user.dir") + "\\textfilesToBeAnalyzed\\testfile1.txt";
+  static String           dirName           = System.getProperty("user.dir") + "\\textfiles\\test";
   static String           modelFile         = "models\\english-left3words-distsim.tagger";
-  static PrintWriter      pw;
-  static int              totalNumWords;
+  static PrintWriter      pw                = null;
+  static int              totalNumWords     = 0;
+  static int              totalSentences    = 0;
 
   //=================================================================================
   //=================================================================================
@@ -229,8 +230,8 @@ public class analyze_files {
     double two = idf(wp.word_two);
     double three = idf(wp);
 
-    pw.print(wp.print() + "\n\t");
-    pw.println(Double.toString(one) + " * " + Double.toString(two) + " * " + Double.toString(three));
+    // pw.print(wp.print() + "\n\t");
+    // pw.println(Double.toString(one) + " * " + Double.toString(two) + " * " + Double.toString(three));
     return one * two * three;
   }
 
@@ -248,11 +249,12 @@ public class analyze_files {
   //=================================================================================
 
   public static double P(String word) {
-    return 0.0;
+    Word_Count wc = find_WC(word);
+    return ((double)wc.actualCount) / ((double)totalNumWords);
   }
 
   public static double P(Word_Pair wp) {
-    return 0.0;
+    return ((double)wp.actualCount) / ((double)totalSentences);
   }
 
   public static double PMI(Word_Pair wp) {
@@ -354,7 +356,7 @@ public class analyze_files {
     }
     
     List<Word_Pair> verb_verb_pairs = findVerbPairs(tSentence);
-    double maxValue = 0.0;
+    double maxValue = -99999999.0;
     Word_Pair returnValue = null;
 
     for (Word_Pair wp : verb_verb_pairs) {
@@ -374,7 +376,7 @@ public class analyze_files {
       }
     }
 
-    return null;
+    return returnValue;
   }
 
   //=================================================================================
@@ -477,12 +479,29 @@ public class analyze_files {
   //=================================================================================
   //=================================================================================
 
+  static void iterateFiles(File[] files) {
+    for (File file : files) {
+      if (file.isDirectory()) {
+        iterateFiles(file.listFiles());
+      } else if (file.isFile()) {
+        if (file.getPath().endsWith(".txt")) {
+          all_files.add(file);
+        }
+      }
+    }
+  }
+
+  //=================================================================================
+  //=================================================================================
+
   public static void main(String[] args) throws Exception {
     pw = new PrintWriter(new OutputStreamWriter(System.out, "utf-8"));
 
     // Populate the Words and Verb-Verb pair data.
     try {
       Scanner scanner = new Scanner(new File("dictionary.txt"));
+      totalNumWords = scanner.nextInt();
+      totalSentences = scanner.nextInt();
       while (scanner.hasNextLine()) {
         int i1 = scanner.nextInt();
         int i2 = scanner.nextInt();
@@ -509,8 +528,8 @@ public class analyze_files {
     }
     
     // Open the file which has to be analyzed.
-    // File[] files = new File(dirName).listFiles();
-    // iterateFiles(files);
+    File[] files = new File(dirName).listFiles();
+    iterateFiles(files);
 
     // The main class for users to run, train, and test the part of speech tagger.
     // http://www-nlp.stanford.edu/nlp/javadoc/javanlp/edu/stanford/nlp/tagger/maxent/MaxentTagger.html
@@ -521,10 +540,10 @@ public class analyze_files {
     TokenizerFactory<CoreLabel> ptbTokenizerFactory = PTBTokenizer.factory(new CoreLabelTokenFactory(), "untokenizable=noneKeep");
 
     // Go through each file in the list.
-    // for (int id = 0; id < all_files.size(); id++) {
+    for (int id = 0; id < all_files.size(); id++) {
 
       // Open the file.
-      BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
+      BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(all_files.get(id)), "utf-8"));
       
       // Produces a list of sentences from the document.
       // http://nlp.stanford.edu/nlp/javadoc/javanlp/edu/stanford/nlp/process/DocumentPreprocessor.html
@@ -543,26 +562,37 @@ public class analyze_files {
 
         // Print the tagged sentence.
         pw.println(Sentence.listToString(tSentence, false));
+
+        // Find the most dependant pair.
+        Word_Pair wp = f_I(tSentence);
+        if (wp != null) {
+          pw.println("WP   = " + wp.word_one + " - " + wp.word_two);
+          pw.println("CD   = " + Double.toString(CD(wp)));
+          pw.println("PS_I = " + Double.toString(PS_I(wp, tSentence, findPhraseLocations(tSentence))) + "\n");
+        } else {
+          pw.println("wp   = NULL\nCD   = NULL\nPS_I = NULL\n");
+        }
       }
+    }
+
+    // // Printing the total number of words
+    // pw.println("\ntotalNumWords = " + Integer.toString(totalNumWords));
+    // // Printing the total number of sentences
+    // pw.println("totalSentences = " + Integer.toString(totalSentences) + "\n");
+
+    // // Printing the Inverse Document Frequency Count
+    // pw.print("DOCUMENT     ACTUAL     WORD\n");
+    // Collections.sort(doc_count_words);
+    // for (int i = 0; i < doc_count_words.size(); i++) {
+    //   pw.println(doc_count_words.get(i).print());
     // }
+    // pw.print("\n\n");
 
-    // Printing the Inverse Document Frequency Count
-    pw.print("DOCUMENT     ACTUAL     WORD\n");
-    Collections.sort(doc_count_words);
-    for (int i = 0; i < doc_count_words.size(); i++) {
-      pw.println(doc_count_words.get(i).print());
-    }
-    pw.print("\n\n");
-
-    // Printing the Verb Pairs.
-    pw.print("Verb Pairs\n");
-    for (Word_Pair wp : all_verb_pairs) {
-      pw.println(wp.print());
-    }
-
-    // Printing a sample IDF.
-    pw.print("\nIDF\n\t");
-    IDF(all_verb_pairs.get(13));
+    // // Printing the Verb Pairs.
+    // pw.print("Verb Pairs\n");
+    // for (Word_Pair wp : all_verb_pairs) {
+    //   pw.println(wp.print());
+    // }
 
     // Testing a max function call.
     // pw.println("MAX = " + Double.toString(max(all_verb_pairs.get(3))));

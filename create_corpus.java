@@ -172,8 +172,9 @@ public class create_corpus {
   static List<Integer>    length_phrases_all= Arrays.asList(1, 3, 3, 1, 4, 4, 1, 2, 3, 1, 4, 1, 1, 3, 2, 1, 1, 1, 3, 1, 1);
   static String           dirName           = System.getProperty("user.dir") + "\\textfiles\\test";
   static String           modelFile         = "models\\english-left3words-distsim.tagger";
-  static PrintWriter      pw;
-  static int              totalNumWords;
+  static PrintWriter      pw                = null;
+  static int              totalNumWords     = 0;
+  static int              totalSentences    = 0;
 
   //=================================================================================
   //=================================================================================
@@ -368,7 +369,8 @@ public class create_corpus {
 
       // Go through each sentence in the document.
       for (List<HasWord> sentence : documentPreprocessor) {
-        
+        totalSentences++;
+
         // Print the sentence
         String sentenceString = Sentence.listToString(sentence, false).toLowerCase();
         pw.println(sentenceString);
@@ -417,7 +419,7 @@ public class create_corpus {
     // Printing the Verb Pairs.
     pw.print("Verb Pairs\n");
     for (Word_Pair wp : all_verb_pairs) {
-      pw.println("\t" + wp.print());
+      pw.println(wp.print());
     }
 
     // Printing a sample IDF.
@@ -431,15 +433,28 @@ public class create_corpus {
 
     // Output the Words to a file called dictionary.txt;
     pw = new PrintWriter(new File("dictionary.txt"));
+
+    for (Word_Count wc : doc_count_words) {
+      totalNumWords += wc.actualCount;
+    }
+    pw.println(totalNumWords);
+    pw.println(totalSentences);
+
     for (int i = 0; i < doc_count_words.size(); i++) {
-      pw.println(doc_count_words.get(i).print());
+      pw.print(doc_count_words.get(i).print());
+      if (i != doc_count_words.size()-1) {
+        pw.print("\n");
+      }
     }
     pw.close();
 
     // Output the Verb-Verb pairs to a file called verb-verb.txt;
     pw = new PrintWriter(new File("verb-verb.txt"));
-    for (Word_Pair wp : all_verb_pairs) {
-      pw.println(wp.print());
+    for (int i = 0; i < all_verb_pairs.size(); i++) {
+      pw.print(all_verb_pairs.get(i).print());
+      if (i != all_verb_pairs.size()-1) {
+        pw.print("\n");
+      }
     }
     pw.close();
   }
